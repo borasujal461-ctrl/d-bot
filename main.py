@@ -1,14 +1,15 @@
 import discord
 import random
 import asyncio
+import os
 from discord.ext import commands
 
-# Standard setup
+# 1. SETUP INTENTS 
+# Make sure "Message Content Intent" is ON in the Discord Developer Portal
 intents = discord.Intents.default()
 intents.message_content = True 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# A list of "interjections" - keep these as edgy as your server allows
 JOKES = [
     "That's what she said... and honestly, it was disappointing.",
     "I’ve seen better timing in a car crash.",
@@ -21,22 +22,25 @@ TRIGGER_WORDS = ["work", "life", "dating", "hard", "problem"]
 
 @bot.event
 async def on_ready():
+    # This will show up in your Railway Logs when it finally works
     print(f'Logged in as {bot.user.name} - Ready to ruin the mood.')
 
 @bot.event
 async def on_message(message):
-    # Don't let the bot talk to itself
+    # Don't let the bot reply to itself
     if message.author == bot.user:
         return
 
-    # Random chance (e.g., 10%) to interject if a trigger word is found
+    # 10% chance to reply to trigger words to keep it random
     if any(word in message.content.lower() for word in TRIGGER_WORDS):
         if random.random() < 0.10: 
-            # Add a small delay so it feels like the bot is 'typing' a comeback
             async with message.channel.typing():
                 await asyncio.sleep(2)
                 await message.reply(random.choice(JOKES))
 
     await bot.process_commands(message)
 
-bot.run("MTQ1MDY5NjY0MTAyNjk4NjE2Nw.GBRVJx.7h7dl3-iXcLHyYoEU8RvYXVhJds5Jp9n5wQ5Gg")
+# 2. THE SECRET FIX
+# This line looks for the 'DISCORD_TOKEN' you added in Railway's Variables tab
+token = os.getenv("DISCORD_TOKEN")
+bot.run(token)
